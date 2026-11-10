@@ -1,32 +1,54 @@
-﻿# Factory Copilot
+<div align="center">
 
-Factory Copilot is a document-grounded assistant for plant supervisors. It answers questions only from the controlled PDFs in the project, shows the exact source document and page, and refuses unsupported or unsafe answers instead of guessing.
+# 🏭 Factory Copilot
 
-The application is designed for maintenance, quality, and safety workflows where the user needs a reliable answer tied to the plant's controlled SOPs and manuals.
+### A document-grounded assistant for plant supervisors
 
-## Problem it solves
+**Answers only from controlled SOPs and manuals. Cites the exact document and page. Refuses instead of guessing.**
 
-Factory teams often work from long PDF manuals, SOPs, inspection records, and maintenance guides. The information is critical, but finding the right revision and confirming the exact instruction is slow and error-prone. Factory Copilot helps by:
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-TF--IDF-F7931E?logo=scikitlearn&logoColor=white)
+![PyMuPDF](https://img.shields.io/badge/PyMuPDF-PDF%20parsing-red)
+![Tests](https://img.shields.io/badge/tests-18%20passing-brightgreen)
+![LLM](https://img.shields.io/badge/LLM-optional-blueviolet)
 
-- indexing the supplied PDFs at startup,
-- retrieving the most relevant passages for a question,
-- checking revision status and superseded documents,
-- grounding answers to the retrieved evidence,
-- refusing unsupported answers and showing the correct source instead.
+[Problem](#-the-problem) · [Features](#-key-features) · [Architecture](#-architecture) · [Demo](#-demo-five-questions) · [Quick Start](#-quick-start) · [Evaluation](#-testing--evaluation) · [Limitations](#-limitations)
 
-## Features
+</div>
 
-- PDF ingestion and page-aware chunking
-- Document metadata parsing for document number, revision, effective date, and supersession
-- Retrieval using a TF-IDF search index with identifier-aware matching
-- Safety-oriented abstention when the documents do not answer the question
-- Revision awareness: current vs superseded versions are separated visibly
-- LLM summary mode when a valid API key is configured
-- Extractive fallback when no key is configured or the model output is invalid
-- Source and page citations in the API response and UI
-- Protected handling for unsupported or unsafe questions
+---
 
-## Architecture
+## 🎯 The Problem
+
+Maintenance, quality, and safety teams work from long PDF manuals, SOPs, inspection records, and maintenance guides. The information is critical, but finding the **right revision** and confirming the **exact instruction** is slow and error-prone.
+
+In a factory, a confident wrong answer is worse than no answer. Factory Copilot is built around that idea:
+
+| Instead of... | Factory Copilot... |
+|---|---|
+| Guessing when docs are silent | **Abstains** and says the documents don't answer it |
+| Mixing old and new procedures | **Separates current vs superseded** revisions visibly |
+| Giving untraceable answers | **Cites document + page** for every answer |
+| Depending on an LLM being available | **Falls back to extractive answers** with no API key |
+
+---
+
+## ✨ Key Features
+
+- 📄 **PDF ingestion with page-aware chunking** — indexed at startup
+- 🏷️ **Metadata parsing** — document number, revision, effective date, supersession
+- 🔎 **Retrieval** — TF-IDF index with identifier-aware matching (e.g. `AL-104`, `TX-200`)
+- 🛑 **Safety-oriented abstention** — refuses when the documents don't support an answer
+- 🔁 **Revision awareness** — current and superseded versions are clearly separated
+- 🤖 **Optional LLM summary mode** — used when a valid API key is configured
+- 🧱 **Extractive fallback** — used when no key is set or the model output fails validation
+- 📌 **Source and page citations** — in both the API response and the UI
+- 🔒 **Protected handling** of unsupported or unsafe questions
+
+---
+
+## 🏗️ Architecture
 
 ```mermaid
 flowchart LR
@@ -40,50 +62,83 @@ flowchart LR
     H --> I[User browser / phone]
 ```
 
-## Technology stack
+### How a question flows
 
-- Python 3.12
-- FastAPI
-- Uvicorn
-- PyMuPDF for PDF text extraction
-- scikit-learn for TF-IDF retrieval
-- NumPy
-- Pydantic
-- python-dotenv
-- OpenAI-compatible Groq API support for optional LLM summaries
-- Static HTML frontend served by FastAPI
+1. **Ingest** — PDFs are parsed with PyMuPDF, split into page-aware chunks, and tagged with revision metadata.
+2. **Retrieve** — the question is matched against the TF-IDF index, with extra weight on exact identifiers.
+3. **Check** — evidence is scored, superseded documents are separated, and abstention checks decide whether the documents actually answer the question.
+4. **Answer** — an LLM summary is generated if a key is configured and validated; otherwise an extractive answer is returned.
+5. **Cite** — every response includes the source document and page.
 
-## Project structure
+---
 
-- app/main.py — API and startup wiring
-- app/ingest.py — PDF parsing, metadata extraction, revision handling
-- app/retrieval.py — search, evidence scoring, abstention checks
-- app/answer.py — response generation, validation, extractive fallback
-- static/index.html — frontend UI
-- tests/test_core.py — regression tests
-- eval/questions.json — evaluation questions
-- eval/run_eval.py — automated answer evaluation
-- docs/ — plant documents used by the app
-- README.md — project overview and usage
-- THINKING.md — design rationale and reflection
-- EVAL.md — evaluation results
+## 🎬 Demo: Five Questions
 
-## Installation and setup
+| # | Question | Status | Answer |
+|:-:|---|:-:|---|
+| 1 | What is the recommended coolant concentration for the TX-200 CNC turning centre? | ✅ Supported | Coolant concentration should be **6 %–8 %**. |
+| 2 | The machine is showing alarm AL-104. What does it mean and what should the operator do? | ✅ Supported | AL-104 indicates **low way lube oil level**. Top up with **ISO VG 68** oil to the MAX mark, then press **RESET**. |
+| 3 | Who is allowed to remove a lockout lock from a machine? | ✅ Supported | **Only the authorised person who placed the lock** may remove it. Nobody may remove another person's lock. |
+| 4 | How many samples must be inspected for a lot of 100 pieces? | ⚠️ Conflict | The **current** plan says **13 samples** must be inspected (a superseded revision exists and is flagged). |
+| 5 | What time is the lunch break? | 🚫 None | The loaded documents do not provide a supported answer. |
 
-These steps were verified on Windows 10/11 with PowerShell.
+> **Status legend** — ✅ answered from the documents · ⚠️ multiple revisions found, current one used · 🚫 not in the documents, so the app abstains
 
-### 1. Install Python
+---
 
-Use Python 3.12 or newer.
+## 🧰 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Python 3.12 |
+| API | FastAPI, Uvicorn |
+| PDF parsing | PyMuPDF |
+| Retrieval | scikit-learn (TF-IDF), NumPy |
+| Validation | Pydantic |
+| Config | python-dotenv |
+| LLM (optional) | OpenAI-compatible Groq API |
+| Frontend | Static HTML served by FastAPI |
+
+---
+
+## 📁 Project Structure
+
+```text
+factory-copilot/
+├── app/
+│   ├── main.py          # API and startup wiring
+│   ├── ingest.py        # PDF parsing, metadata extraction, revision handling
+│   ├── retrieval.py     # Search, evidence scoring, abstention checks
+│   └── answer.py        # Response generation, validation, extractive fallback
+├── static/
+│   └── index.html       # Frontend UI
+├── tests/
+│   └── test_core.py     # Regression tests
+├── eval/
+│   ├── questions.json   # Evaluation questions
+│   └── run_eval.py      # Automated answer evaluation
+├── docs/                # Plant documents used by the app
+├── README.md            # Project overview and usage
+├── THINKING.md          # Design rationale and reflection
+└── EVAL.md              # Evaluation results
+```
+
+---
+
+## 🚀 Quick Start
+
+> Verified on **Windows 10/11 with PowerShell**.
+
+### 1. Check Python (3.12 or newer)
 
 ```powershell
 py -3.12 --version
 ```
 
-### 2. Create a virtual environment
+### 2. Create and activate a virtual environment
 
 ```powershell
-cd C:\Users\ranan\Desktop\factory-copilot
+cd factory-copilot
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
@@ -102,57 +157,63 @@ Copy-Item .env.example .env
 notepad .env
 ```
 
-Example:
-
 ```env
 GROQ_API_KEY=your_groq_api_key_here
 FC_MODEL=openai/gpt-oss-120b
 ```
 
-### 5. Run the application
+| Variable | Purpose |
+|---|---|
+| `GROQ_API_KEY` | Enables LLM summary mode. **Optional** — without it the app uses extractive answers. |
+| `FC_MODEL` | Model used for LLM summaries. |
+
+### 5. Run
 
 ```powershell
-cd C:\Users\ranan\Desktop\factory-copilot
-.\.venv\Scripts\Activate.ps1
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 Then open:
 
-- http://localhost:8000
-- or http://<your-laptop-ip>:8000 on the same Wi‑Fi network
+- 💻 http://localhost:8000
+- 📱 `http://<your-laptop-ip>:8000` from a phone on the same Wi‑Fi network
 
-## Five questions and actual answers
+---
 
-| Question | Status | Actual answer |
-|---|---|---|
-| What is the recommended coolant concentration for the TX-200 CNC turning centre? | supported | Coolant concentration should be 6 %–8 %. |
-| The machine is showing alarm AL-104. What does it mean and what should the operator do? | supported | AL-104 indicates the way lube oil level is low; the operator should top up with ISO VG 68 oil to the MAX mark and then press RESET. |
-| Who is allowed to remove a lockout lock from a machine? | supported | Only the authorised person who placed the lock may remove it; nobody may remove another person's lock. |
-| How many samples must be inspected for a lot of 100 pieces? | conflict | For a lot of 100 pieces, the current plan says 13 samples must be inspected. |
-| What time is the lunch break? | none | The loaded documents do not provide a supported answer. |
-
-## Testing and evaluation
+## 🧪 Testing & Evaluation
 
 ```powershell
-python -m pytest -q
-python eval/run_eval.py
+python -m pytest -q          # regression tests
+python eval/run_eval.py      # automated answer evaluation
 ```
 
-Verified in this environment: 18 tests passed.
+- ✅ **18 tests passing** in the verified environment
+- 📊 Evaluation results are documented in [`EVAL.md`](EVAL.md)
+- 🧠 Design rationale and trade-offs are documented in [`THINKING.md`](THINKING.md)
 
-## Limitations
+---
 
-- The app depends on the PDF set in docs/ and is only as reliable as the source documents.
-- Retrieval is local and lightweight; paraphrase recall may still be limited.
+## ⚠️ Limitations
+
+- Reliability depends on the PDF set in `docs/`; the app is only as good as its source documents.
+- Retrieval is local and lightweight, so paraphrase recall may be limited.
 - LLM summaries require a valid API key and network access.
 - No authentication or user roles are implemented.
-- The supplied PDFs are text-faithful stand-ins for the originals when needed; the final deployment should replace them with the real controlled documents from the plant QMS or approved source.
+- The supplied PDFs are text-faithful stand-ins for the originals; a real deployment should use the controlled documents from the plant QMS or another approved source.
 
-## Security
+---
+
+## 🔐 Security
 
 - Never commit API keys or secrets.
-- Keep keys in a local .env file.
-- Use .env.example as the public template only.
+- Keep keys in a local `.env` file; use `.env.example` as the public template only.
 - Do not print tokens or keys in logs or in the README.
 - Use a local or controlled LLM endpoint if confidentiality requires it.
+
+---
+
+<div align="center">
+
+**Built for reliability first: if the documents don't say it, Factory Copilot won't either.**
+
+</div>
