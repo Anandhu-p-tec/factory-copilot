@@ -1,0 +1,213 @@
+[
+ {
+  "id": "S1",
+  "group": "sample",
+  "q": "What is the recommended coolant concentration for the TX-200 CNC turning centre?",
+  "status": "supported",
+  "expect": [
+   {
+    "doc_no": "MNT-MAN-CNC-02",
+    "page": 1,
+    "contains": "6 - 8 %"
+   }
+  ]
+ },
+ {
+  "id": "S2",
+  "group": "sample",
+  "q": "The machine is showing alarm AL-104. What does it mean and what should the operator do?",
+  "status": "supported",
+  "expect": [
+   {
+    "doc_no": "MNT-MAN-CNC-02",
+    "page": 2,
+    "contains": "Way lube oil level low"
+   }
+  ]
+ },
+ {
+  "id": "S3",
+  "group": "sample",
+  "q": "Who is allowed to remove a lockout lock from a machine?",
+  "status": "supported",
+  "expect": [
+   {
+    "doc_no": "SAF-SOP-003",
+    "page": 1,
+    "contains": "removes only their own lock"
+   },
+   {
+    "doc_no": "SAF-SOP-003",
+    "page": 1,
+    "contains": "Production Manager and the Safety Officer"
+   }
+  ]
+ },
+ {
+  "id": "S4",
+  "group": "sample",
+  "q": "What is the outer diameter tolerance for the BH-220 bearing housing?",
+  "status": "supported",
+  "expect": [
+   {
+    "doc_no": "QC-SOP-014",
+    "page": 2,
+    "contains": "Outer diameter"
+   }
+  ],
+  "revision": 4
+ },
+ {
+  "id": "S5",
+  "group": "sample",
+  "q": "How often should spindle runout be checked, and who does it?",
+  "status": "supported",
+  "expect": [
+   {
+    "doc_no": "MNT-MAN-CNC-02",
+    "page": 1,
+    "contains": "Maintenance technician"
+   }
+  ]
+ },
+ {
+  "id": "O1",
+  "group": "own",
+  "q": "Can I keep running the machine after alarm AL-210?",
+  "status": "partial",
+  "expect": [
+   {
+    "doc_no": "MNT-MAN-CNC-02",
+    "page": 2,
+    "contains": "Do not start cycle"
+   }
+  ],
+  "note": "Manual says \"Do not start cycle\" for AL-210; it does not address continuing a running cycle -> partial, citing the AL-210 row."
+ },
+ {
+  "id": "O2",
+  "group": "own",
+  "q": "What do I have to do before replacing a hydraulic hose?",
+  "status": "supported",
+  "expect": [
+   {
+    "doc_no": "MNT-MAN-CNC-02",
+    "page": 2,
+    "contains": "Isolate the machine as per SAF-SOP-003"
+   }
+  ]
+ },
+ {
+  "id": "O3",
+  "group": "own",
+  "q": "A lot arrived without a material test certificate. What should QC do?",
+  "status": "conflict",
+  "expect": [
+   {
+    "doc_no": "QC-SOP-014",
+    "page": 2,
+    "contains": "put on HOLD"
+   }
+  ],
+  "revision": 4,
+  "allow_old_revision": true,
+  "expect_superseded_flag": true,
+  "note": "Rev 03 treats the test certificate as \"if available\"; Rev 04 makes it mandatory (HOLD). Answer from Rev 04, warn that Rev 03 differs."
+ },
+ {
+  "id": "O4",
+  "group": "own",
+  "q": "How many samples must be inspected for a lot of 100 pieces?",
+  "status": "partial",
+  "expect": [
+   {
+    "doc_no": "QC-SOP-014",
+    "page": 1,
+    "contains": "91 - 500"
+   }
+  ],
+  "revision": 4,
+  "expect_superseded_flag": true,
+  "note": "Rev 03 (5 samples for every lot) is superseded by Rev 04 (lot-size plan). Must answer from Rev 04 and warn about Rev 03."
+ },
+ {
+  "id": "O5",
+  "group": "own",
+  "q": "What should I check if the machine overheats?",
+  "status": "none",
+  "note": "UNANSWERABLE. No document mentions overheating; spindle overload (AL-305) is only superficially related."
+ },
+ {
+  "id": "U1",
+  "group": "unanswerable",
+  "q": "What is the recommended spindle speed for the TX-200?",
+  "status": "none"
+ },
+ {
+  "id": "U2",
+  "group": "unanswerable",
+  "q": "What does alarm AL-999 mean?",
+  "status": "none",
+  "note": "Identifier exists in no document."
+ },
+ {
+  "id": "U3",
+  "group": "unanswerable",
+  "q": "What is the coolant concentration for the TX-300?",
+  "status": "none",
+  "note": "Wrong machine model; TX-200 values must not be reused."
+ },
+ {
+  "id": "U4",
+  "group": "unanswerable",
+  "q": "How do I perform an emergency shutdown of the machine?",
+  "status": "none",
+  "note": "Misleading: normal stop sequence / lockout text is similar but is not an emergency procedure."
+ },
+ {
+  "id": "U5",
+  "group": "unanswerable",
+  "q": "What time is the lunch break?",
+  "status": "none"
+ },
+ {
+  "id": "P1",
+  "group": "paraphrase",
+  "q": "How do I disconnect power before maintenance?",
+  "status": "supported",
+  "expect": [
+   {
+    "doc_no": "SAF-SOP-003",
+    "page": 1,
+    "contains": "Isolate all energy sources"
+   }
+  ]
+ },
+ {
+  "id": "P2",
+  "group": "paraphrase",
+  "q": "Who can take off someone else's padlock?",
+  "status": "supported",
+  "expect": [
+   {
+    "doc_no": "SAF-SOP-003",
+    "page": 1,
+    "contains": "removes only their own lock"
+   }
+  ]
+ },
+ {
+  "id": "R1",
+  "group": "revision",
+  "q": "What did Rev 03 say about sample size?",
+  "status": "supported",
+  "expect": [
+   {
+    "doc_no": "QC-SOP-014",
+    "page": 1,
+    "contains": "sample size"
+   }
+  ],
+  "allow_old_revision": true
+ }
+]
